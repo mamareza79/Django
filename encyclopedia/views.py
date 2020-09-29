@@ -3,23 +3,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 from . import util
 
+from random import randint
+
 
 def index(request):
-    if request.method == "POST":
-        name = request.POST.get("q")
-        if util.get_entry(name) is not None:
-            return HttpResponseRedirect(reverse('title', args=[name]))
-        else:
-            result = []
-            for res in util.list_entries():
-                if name in res:
-                    result.append(res)
-            if result is not None:
-                # return render(request, "encyclopedia/search.html", {
-                # "pages": result
-                # })
-                return HttpResponseRedirect(reverse('search', args=result))
-                # pass
+
     return render(request, "encyclopedia/index.html", {
         "entries": util.list_entries()
     })
@@ -31,12 +19,26 @@ def title(request, title):
     })
 
 
-def search(request, pages):
-    # list_entries = util.list_entries()
-    print(pages)
-    return render(request, "encyclopedia/search.html", {
-        "pages": pages
-    })
+def search(request):
+    if request.method == "POST":
+        name = request.POST.get("q")
+        if util.get_entry(name.upper()) is not None:
+            return HttpResponseRedirect(reverse('title', args=[name]))
+        else:
+            result = []
+            for res in util.list_entries():
+                if name.upper() in res.upper():
+                    result.append(res)
+            if result is not None:
+                return render(request, "encyclopedia/search.html", {
+                    "pages": result
+                })
+
+
+def random(request):
+    entries = util.list_entries()
+    random_page = randint(0, len(entries)-1)
+    return HttpResponseRedirect(reverse('title', args=[entries[random_page]]))
 
 
 def create(request):
